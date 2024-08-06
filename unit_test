@@ -19,3 +19,33 @@ public void createFolder(String bucketName, String folderName) throws FileNotFou
             throw new FileNotFoundException("GCP credentials not found");
         }
     }
+
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Storage;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import static org.mockito.Mockito.*;
+
+public class MyServiceTest {
+
+    @Test
+    public void shouldCreateFolderSuccessfully() throws Exception {
+        // Arrange
+        Storage storage = Mockito.mock(Storage.class);
+        Bucket bucket = Mockito.mock(Bucket.class);
+        Mockito.when(storage.get(Mockito.anyString())).thenReturn(bucket);
+        Mockito.when(isValidFolderName(Mockito.anyString())).thenReturn(true);
+        Mockito.when(folderExists(storage, Mockito.anyString(), Mockito.anyString())).thenReturn(false);
+
+        MyService service = new MyService(storage);
+
+        // Act
+        service.createFolder("my-bucket", "my-folder");
+
+        // Assert
+        verify(bucket).create(any(BlobInfo.class));
+    }
+
+    // ... outros testes para diferentes cenários ...
+}
