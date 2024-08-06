@@ -1,0 +1,21 @@
+public void createFolder(String bucketName, String folderName) throws FileNotFoundException {
+
+        try {
+            Storage storage = getStorage();
+            if (isValidFolderName(folderName)) {
+                throw new IllegalArgumentException("Invalid file name.");
+            }
+
+            if (folderExists(storage, bucketName, folderName)) {
+                throw new IllegalStateException("folder already exists");
+            }
+
+            BlobId blobId = BlobId.of(bucketName, folderName.endsWith("/") ? folderName : folderName + "/");
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+
+            storage.create(blobInfo);
+
+        } catch (IOException e) {
+            throw new FileNotFoundException("GCP credentials not found");
+        }
+    }
