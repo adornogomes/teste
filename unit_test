@@ -19,33 +19,48 @@ public void createFolder(String bucketName, String folderName) throws FileNotFou
             throw new FileNotFoundException("GCP credentials not found");
         }
     }
+*******************************************************************************************************************
 
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.Storage;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+@Service
+public class MainServiceDetails {
 
-import static org.mockito.Mockito.*;
+public List<String> getFileList(Storage storage) {
+    List<String> list = new ArrayList<>();
+    Page<Blob> blobs = storage.list("bucketname"); // bucket name
 
-public class MyServiceTest {
+    for (Blob blob : blobs.iterateAll()) {
+        list.add(blob.getName());
+        System.out.println(blob.getName());
+    }
+    return list;
+}
+  }
+
+******************************************************************************************************************
+
+@ExtendWith(MockitoExtension.class)
+public class ControllerTest {
+
+    @Mock
+    private MainServiceDetails mainService;
+    @InjectMocks
+    private Controller controller;
+    @Captor
+    private ArgumentCaptor<Storage> storageCaptor;
 
     @Test
-    public void shouldCreateFolderSuccessfully() throws Exception {
-        // Arrange
-        Storage storage = Mockito.mock(Storage.class);
-        Bucket bucket = Mockito.mock(Bucket.class);
-        Mockito.when(storage.get(Mockito.anyString())).thenReturn(bucket);
-        Mockito.when(isValidFolderName(Mockito.anyString())).thenReturn(true);
-        Mockito.when(folderExists(storage, Mockito.anyString(), Mockito.anyString())).thenReturn(false);
+    public void test() {
+         List<String> expected = Arrays.asList("sup1", "sup2", "sup3"); 
 
-        MyService service = new MyService(storage);
+         Mockito.when(mainService.getFileList(storageCaptor.capture()))
+              .thenReturn(expected);
 
-        // Act
-        service.createFolder("my-bucket", "my-folder");
-
-        // Assert
-        verify(bucket).create(any(BlobInfo.class));
+         List<String> actual = controller.getBucketList();
+         
+         Storage value = storageCaptor.getValue();
+         //verify call to mainService is made with Storage.
+         Mockito.verify(mainService, times(1)).getFileList(value);
+         //Add some assertions to check if the storage object has the values you expect
+         //assertThat(value.getProjectId()).isEqualTo("projectId");
     }
-
-    // ... outros testes para diferentes cenários ...
 }
